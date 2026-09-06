@@ -2,19 +2,17 @@
 
 一個以 React、TypeScript 與 Tailwind CSS 製作的《詩經》互動讀本。網站以「紙本經籍 × 現代編輯器」為設計方向，完整收錄今存 305 篇，並依國風、小雅、大雅、周頌、魯頌、商頌及其次分部編排。
 
+## 線上網站
+
+GitHub Pages：<https://kuohuafan.github.io/shijing-reader/>
+
+原始碼儲存庫：<https://github.com/KuohuaFan/shijing-reader>
+
 ## 主要功能
 
-- 封面式進入體驗與沉浸式閱讀頁
-- 六部分層目錄與 305 篇全文搜尋
-- 原文、《毛詩序》與讀者札記分層
-- 上一篇、下一篇、隨機篇章與網址錨點
-- 收藏、本機自動儲存札記
-- 瀏覽器中文語音朗讀
-- 明暗模式、字級調整及橫排／直排切換
-- 桌面、平板及手機響應式版面
-- 列印友善樣式
+本站提供封面式進入體驗、六部分層目錄、305 篇全文搜尋、原文與古序分層、篇章固定連結、收藏、本機札記、瀏覽器中文朗讀、明暗模式、字級調整、橫排／直排切換、響應式版面及列印樣式。
 
-## 開發
+## 本機開發
 
 ```bash
 pnpm install
@@ -26,8 +24,20 @@ pnpm dev
 ```bash
 node scripts/verify-data.mjs
 pnpm check
-pnpm build
+pnpm build:web
 ```
+
+## GitHub Pages 自動部署
+
+`.github/workflows/deploy-pages.yml` 會在每次推送至 `main` 分支後執行資料完整性檢查、TypeScript 檢查、Vite 建置及 GitHub Pages 發布。一般內容維護只需提交並推送：
+
+```bash
+git add .
+git commit -m "更新詩經內容"
+git push origin main
+```
+
+GitHub Actions 完成後，正式網站會自動更新。部署狀態可在儲存庫的 **Actions** 頁面查看。
 
 ## 內容編輯
 

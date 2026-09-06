@@ -26,8 +26,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { chapterOrder, poems, type Poem } from "@/data/shijing";
 import { prefaces } from "@/data/prefaces";
 
-const HERO = "/manus-storage/shijing-hero_5b15bec2.jpg";
-const REEDS = "/manus-storage/shijing-reeds_9090e162.png";
+const HERO = `${import.meta.env.BASE_URL}assets/shijing-hero.webp`;
+const REEDS = `${import.meta.env.BASE_URL}assets/shijing-reeds.png`;
 const NOTE_KEY = "shijing-reader:notes:v1";
 const STAR_KEY = "shijing-reader:stars:v1";
 const SIZE_KEY = "shijing-reader:font-size:v1";
