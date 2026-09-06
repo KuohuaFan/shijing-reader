@@ -18,6 +18,12 @@
 | 第三方授權 | `THIRD_PARTY_NOTICES.md` | 已交付 |
 | 資料驗證程式 | `scripts/verify-data.mjs` | 已交付 |
 
+### 正式部署驗收紀錄
+
+GitHub Actions 執行編號 **34052826697** 已於 2026-09-07 完成，`build` 與 `deploy` 兩個工作均為成功。正式網站已在 `https://kuohuafan.github.io/shijing-reader/` 提供服務；首頁、JavaScript、CSS、水墨背景與透明蘆葦素材均回傳 HTTP 200。
+
+線上互動驗收亦已完成。首頁可進入閱讀器；目錄顯示 305 篇；搜尋「蒹葭」會縮減為單一結果；選取後網址更新為 `?read=1#poem-129`，並正確顯示〈蒹葭〉三章全文。
+
 ## 二、部署方案
 
 GitHub Pages 可直接從分支檔案發布，也可由 GitHub Actions 先建置再發布。官方文件支援自訂 Actions 工作流程，並提供 `configure-pages`、`upload-pages-artifact` 與 `deploy-pages` 等官方 Actions。[1]
