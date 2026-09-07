@@ -18,6 +18,7 @@ import {
   Settings2,
   Shuffle,
   Sun,
+  Tags,
   TextCursorInput,
   X,
 } from "lucide-react";
@@ -25,6 +26,16 @@ import { toast } from "sonner";
 import { useTheme } from "@/contexts/ThemeContext";
 import { chapterOrder, poems, type Poem } from "@/data/shijing";
 import { prefaces } from "@/data/prefaces";
+import {
+  poemMatchesTopic,
+  topicByKey,
+  topicCount,
+  topicDefinitions,
+  topicGroups,
+  topicMethodNote,
+  topicsForPoem,
+  type TopicKey,
+} from "@/data/topics";
 
 const HERO = `${import.meta.env.BASE_URL}assets/shijing-hero.webp`;
 const REEDS = `${import.meta.env.BASE_URL}assets/shijing-reeds.png`;
@@ -84,6 +95,7 @@ export default function Home() {
   const [about, setAbout] = useState(false);
   const [settings, setSettings] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [selectedTopics, setSelectedTopics] = useState<TopicKey[]>([]);
   const [favorites, setFavorites] = useState<number[]>(() =>
     readJson<number[]>(STAR_KEY, []),
   );
@@ -102,11 +114,27 @@ export default function Home() {
     const needle = query.trim().toLocaleLowerCase("zh-Hant");
     return poems.filter((poem) => {
       const matchFavorite = !favoritesOnly || favorites.includes(poem.id);
+      const matchTopics = topicGroups.every((group) => {
+        const selectedInGroup = selectedTopics.filter(
+          (key) => topicByKey[key].group === group.key,
+        );
+        return (
+          selectedInGroup.length === 0 ||
+          selectedInGroup.some((key) => poemMatchesTopic(poem, key))
+        );
+      });
       const haystack = `${poem.title}${poem.chapter}${poem.section}${poem.stanzas.join("")}`.toLocaleLowerCase("zh-Hant");
-      return matchFavorite && (!needle || haystack.includes(needle));
+      return matchFavorite && matchTopics && (!needle || haystack.includes(needle));
     });
-  }, [query, favoritesOnly, favorites]);
+  }, [query, favoritesOnly, favorites, selectedTopics]);
   const grouped = useMemo(() => groupPoems(filtered), [filtered]);
+  const topicCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        topicDefinitions.map((topic) => [topic.key, topicCount(topic.key, poems)]),
+      ) as Record<TopicKey, number>,
+    [],
+  );
 
   useEffect(() => {
     localStorage.setItem(STAR_KEY, JSON.stringify(favorites));
@@ -220,9 +248,18 @@ export default function Home() {
     selectPoem(next);
   }
 
+  function toggleTopic(topic: TopicKey) {
+    setSelectedTopics((currentTopics) =>
+      currentTopics.includes(topic)
+        ? currentTopics.filter((key) => key !== topic)
+        : [...currentTopics, topic],
+    );
+  }
+
   const currentIndex = current.id - 1;
   const isFavorite = favorites.includes(current.id);
   const preface = prefaces[current.id];
+  const currentTopics = topicsForPoem(current);
 
   if (cover) {
     return (
@@ -312,6 +349,10 @@ export default function Home() {
             favoritesOnly={favoritesOnly}
             setFavoritesOnly={setFavoritesOnly}
             favoritesCount={favorites.length}
+            selectedTopics={selectedTopics}
+            toggleTopic={toggleTopic}
+            clearTopics={() => setSelectedTopics([])}
+            topicCounts={topicCounts}
             selectPoem={selectPoem}
             close={() => setDrawer(false)}
           />
@@ -350,6 +391,21 @@ export default function Home() {
                 {speaking ? <Pause /> : <Play />}
                 <span>{speaking ? "停止朗讀" : "聽此篇"}</span>
               </button>
+            </div>
+
+            <div className="poemTopicRow" aria-label="本篇主題">
+              <span><Tags /> 本篇主題</span>
+              {currentTopics.map((topic) => (
+                <button
+                  key={topic.key}
+                  className={selectedTopics.includes(topic.key) ? "active" : ""}
+                  onClick={() => toggleTopic(topic.key)}
+                  title={`${topic.description}；點按以篩選目錄`}
+                  aria-pressed={selectedTopics.includes(topic.key)}
+                >
+                  {topic.label}
+                </button>
+              ))}
             </div>
 
             <nav className="contentTabs" aria-label="內容層次">
@@ -454,6 +510,10 @@ function Catalogue({
   favoritesOnly,
   setFavoritesOnly,
   favoritesCount,
+  selectedTopics,
+  toggleTopic,
+  clearTopics,
+  topicCounts,
   selectPoem,
   close,
 }: {
@@ -464,9 +524,14 @@ function Catalogue({
   favoritesOnly: boolean;
   setFavoritesOnly: (value: boolean) => void;
   favoritesCount: number;
+  selectedTopics: TopicKey[];
+  toggleTopic: (topic: TopicKey) => void;
+  clearTopics: () => void;
+  topicCounts: Record<TopicKey, number>;
   selectPoem: (id: number) => void;
   close: () => void;
 }) {
+  const [topicsOpen, setTopicsOpen] = useState(true);
   const resultCount = grouped.reduce(
     (total, group) => total + group.sections.reduce((sum, section) => sum + section.poems.length, 0),
     0,
@@ -486,6 +551,55 @@ function Catalogue({
         <button className={!favoritesOnly ? "active" : ""} onClick={() => setFavoritesOnly(false)}>全部 <b>{poems.length}</b></button>
         <button className={favoritesOnly ? "active" : ""} onClick={() => setFavoritesOnly(true)}>收藏 <b>{favoritesCount}</b></button>
       </div>
+      <section className={`topicFilters ${topicsOpen ? "open" : ""}`} aria-label="依主題分類篩選">
+        <div className="topicFilterHeading">
+          <button
+            className="topicFilterToggle"
+            onClick={() => setTopicsOpen((open) => !open)}
+            aria-expanded={topicsOpen}
+          >
+            <span><Tags /> 主題索引</span>
+            {selectedTopics.length > 0 && <b>{selectedTopics.length}</b>}
+            <ChevronDown />
+          </button>
+          {selectedTopics.length > 0 && (
+            <button className="clearTopics" onClick={clearTopics}>清除</button>
+          )}
+        </div>
+        {topicsOpen && (
+          <div className="topicFilterBody">
+            {topicGroups.map((group) => (
+              <div className="topicGroup" key={group.key}>
+                <div className="topicGroupLabel">
+                  <span>{group.label}</span>
+                  <small>{group.description}</small>
+                </div>
+                <div className="topicChips">
+                  {topicDefinitions
+                    .filter((topic) => topic.group === group.key)
+                    .map((topic) => {
+                      const active = selectedTopics.includes(topic.key);
+                      return (
+                        <button
+                          key={topic.key}
+                          className={active ? "active" : ""}
+                          onClick={() => toggleTopic(topic.key)}
+                          aria-pressed={active}
+                          title={topic.description}
+                        >
+                          {active && <Check />}
+                          <span>{topic.label}</span>
+                          <b>{topicCounts[topic.key]}</b>
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+            ))}
+            <p className="topicHint"><CircleHelp />同組任一、跨組交集。{topicMethodNote}</p>
+          </div>
+        )}
+      </section>
       <div className="catalogueCount">目前顯示 {resultCount} 篇</div>
       <div className="catalogueScroll">
         {resultCount === 0 && <div className="noResults">沒有符合的篇章</div>}

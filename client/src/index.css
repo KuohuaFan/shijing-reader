@@ -173,6 +173,30 @@ button { border: 0; background: none; }
 .catalogueFilters button { padding: 8px; color: var(--ink-soft); font-size: 12px; border-bottom: 2px solid transparent; }
 .catalogueFilters button.active { color: var(--cinnabar); border-color: var(--cinnabar); }
 .catalogueFilters b { font-family: "Noto Sans TC", sans-serif; font-size: 9px; margin-left: 5px; opacity: .7; }
+.topicFilters { margin: 11px 14px 0; border: 1px solid var(--border); background: color-mix(in srgb, var(--card) 50%, transparent); }
+.topicFilterHeading { min-height: 39px; display: flex; align-items: center; padding: 0 8px 0 10px; }
+.topicFilterToggle { min-width: 0; flex: 1; display: flex; align-items: center; gap: 7px; color: var(--ink); font-family: "Noto Sans TC", sans-serif; font-size: 11px; text-align: left; }
+.topicFilterToggle > span { display: flex; align-items: center; gap: 7px; letter-spacing: .08em; }
+.topicFilterToggle svg { width: 14px; height: 14px; color: var(--cinnabar); transition: transform .18s cubic-bezier(.23,1,.32,1); }
+.topicFilterToggle > svg:last-child { margin-left: auto; color: var(--ink-soft); }
+.topicFilters:not(.open) .topicFilterToggle > svg:last-child { transform: rotate(-90deg); }
+.topicFilterToggle b { min-width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; color: var(--primary-foreground); background: var(--cinnabar); font-size: 9px; }
+.clearTopics { padding: 4px 3px; margin-left: 7px; color: var(--cinnabar); font-family: "Noto Sans TC", sans-serif; font-size: 9px; border-bottom: 1px solid color-mix(in srgb, var(--cinnabar) 35%, transparent); }
+.topicFilterBody { padding: 3px 10px 11px; border-top: 1px solid var(--border); animation: topicPanelIn .18s cubic-bezier(.23,1,.32,1); }
+.topicGroup { padding-top: 9px; }
+.topicGroup + .topicGroup { margin-top: 8px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.topicGroupLabel { display: flex; align-items: baseline; gap: 8px; margin-bottom: 7px; font-family: "Noto Sans TC", sans-serif; }
+.topicGroupLabel span { flex: 0 0 auto; color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: .14em; }
+.topicGroupLabel small { color: var(--ink-soft); font-size: 8px; line-height: 1.35; }
+.topicChips { display: flex; flex-wrap: wrap; gap: 5px; }
+.topicChips button { min-height: 27px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; color: var(--ink-soft); background: color-mix(in srgb, var(--paper) 65%, transparent); border: 1px solid var(--border); font-family: "Noto Sans TC", sans-serif; font-size: 10px; transition: color .15s, border-color .15s, background .15s, transform .15s; }
+.topicChips button:hover { color: var(--ink); border-color: color-mix(in srgb, var(--cinnabar) 38%, var(--border)); }
+.topicChips button:active { transform: scale(.96); }
+.topicChips button.active { color: var(--cinnabar); border-color: color-mix(in srgb, var(--cinnabar) 58%, transparent); background: color-mix(in srgb, var(--cinnabar) 9%, transparent); }
+.topicChips button svg { width: 11px; height: 11px; stroke-width: 2; }
+.topicChips button b { font-size: 8px; font-weight: 500; opacity: .6; }
+.topicHint { display: flex; align-items: flex-start; gap: 5px; margin: 10px 0 0; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 8px; line-height: 1.55; }
+.topicHint svg { width: 12px; height: 12px; flex: 0 0 auto; margin-top: 1px; color: var(--gold); }
 .catalogueCount { padding: 13px 22px 6px; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 9px; letter-spacing: .08em; }
 .catalogueScroll { min-height: 0; overflow-y: auto; padding: 0 12px 36px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .catalogue details { border-bottom: 1px solid var(--border); }
@@ -192,12 +216,18 @@ button { border: 0; background: none; }
 .poemArticle { max-width: 830px; margin: 0 auto; padding: 72px clamp(30px,6vw,74px) 80px; }
 .breadcrumb { display: flex; gap: 9px; align-items: center; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 10px; letter-spacing: .12em; }
 .breadcrumb i { color: var(--gold); font-style: normal; }
-.poemHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; margin: 18px 0 34px; }
+.poemHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; margin: 18px 0 22px; }
 .titleKicker { color: var(--cinnabar); font-family: "Noto Sans TC", sans-serif; font-size: 11px; letter-spacing: .22em; margin-bottom: 8px; }
 .poemHeading h1 { font-size: clamp(45px,6vw,70px); letter-spacing: .16em; line-height: 1; margin: 0; font-weight: 650; }
 .listenButton { display: flex; align-items: center; gap: 9px; padding: 10px 14px; color: var(--pine); border: 1px solid var(--border); font-family: "Noto Sans TC", sans-serif; font-size: 11px; white-space: nowrap; transition: all .18s; }
 .listenButton svg { width: 15px; }
 .listenButton:hover, .listenButton.playing { color: var(--cinnabar); border-color: color-mix(in srgb, var(--cinnabar) 45%, transparent); background: color-mix(in srgb, var(--cinnabar) 7%, transparent); }
+.poemTopicRow { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-bottom: 19px; }
+.poemTopicRow > span { display: flex; align-items: center; gap: 6px; margin-right: 4px; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 9px; letter-spacing: .1em; }
+.poemTopicRow > span svg { width: 13px; height: 13px; color: var(--gold); }
+.poemTopicRow button { padding: 4px 9px; color: var(--ink-soft); border: 1px solid var(--border); font-family: "Noto Sans TC", sans-serif; font-size: 9px; letter-spacing: .06em; transition: color .15s, border-color .15s, background .15s, transform .15s; }
+.poemTopicRow button:hover, .poemTopicRow button.active { color: var(--cinnabar); border-color: color-mix(in srgb, var(--cinnabar) 48%, transparent); background: color-mix(in srgb, var(--cinnabar) 7%, transparent); }
+.poemTopicRow button:active { transform: scale(.96); }
 .contentTabs { display: flex; gap: 28px; border-bottom: 1px solid var(--border); }
 .contentTabs button { display: flex; align-items: center; gap: 8px; padding: 11px 2px 13px; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 12px; border-bottom: 2px solid transparent; position: relative; }
 .contentTabs button svg { width: 15px; }
@@ -265,6 +295,7 @@ button { border: 0; background: none; }
 .scrim { display: none; }
 
 @keyframes panelIn { from { opacity: 0; transform: translateX(22px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes topicPanelIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: no-preference) {
   .coverContent > * { animation: reveal .65s both cubic-bezier(.23,1,.32,1); }
   .coverContent > *:nth-child(2) { animation-delay: .06s; }
@@ -307,6 +338,7 @@ button { border: 0; background: none; }
   .poemHeading h1 { font-size: 47px; }
   .listenButton span { display: none; }
   .listenButton { width: 42px; height: 42px; padding: 0; justify-content: center; border-radius: 50%; }
+  .poemTopicRow { margin-bottom: 16px; }
   .contentTabs { gap: 12px; justify-content: space-between; }
   .contentTabs button { font-size: 11px; gap: 5px; }
   .contentStage { min-height: 390px; }

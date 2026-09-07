@@ -10,7 +10,7 @@ GitHub Pages：<https://kuohuafan.github.io/shijing-reader/>
 
 ## 主要功能
 
-本站提供封面式進入體驗、六部分層目錄、305 篇全文搜尋、原文與古序分層、篇章固定連結、收藏、本機札記、瀏覽器中文朗讀、明暗模式、字級調整、橫排／直排切換、響應式版面及列印樣式。
+本站提供封面式進入體驗、六部分層目錄、305 篇全文搜尋、風／雅／頌體例篩選、愛情／農事／征役／祭祀／宴飲／思歸內容主題交叉篩選、原文與古序分層、篇章固定連結、收藏、本機札記、瀏覽器中文朗讀、明暗模式、字級調整、橫排／直排切換、響應式版面及列印樣式。
 
 ## 本機開發
 
@@ -41,7 +41,7 @@ GitHub Actions 完成後，正式網站會自動更新。部署狀態可在儲�
 
 ## 內容編輯
 
-完整說明見 [`CONTENT_GUIDE.md`](./CONTENT_GUIDE.md)。原文資料集中於 `client/src/data/shijing.ts`；古序資料集中於 `client/src/data/prefaces.ts`。資料與介面分離，校訂內容不需更改元件。
+完整說明見 [`CONTENT_GUIDE.md`](./CONTENT_GUIDE.md)。原文資料集中於 `client/src/data/shijing.ts`；古序資料集中於 `client/src/data/prefaces.ts`；體例與內容主題索引集中於 `client/src/data/topics.ts`。資料與介面分離，校訂內容不需更改元件。
 
 ## 資料與授權
 
