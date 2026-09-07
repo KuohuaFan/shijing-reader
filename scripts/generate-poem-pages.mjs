@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourcePath = path.join(projectRoot, "client/src/data/shijing.ts");
+const editionPath = path.join(projectRoot, "client/src/data/edition.ts");
 const distDir = path.join(projectRoot, "dist/public");
 const indexPath = path.join(distDir, "index.html");
 const siteUrl = "https://kuohuafan.github.io/shijing-reader/";
@@ -14,6 +15,12 @@ const start = source.indexOf(marker);
 const end = source.indexOf("\n];", start);
 if (start < 0 || end < 0) throw new Error("Unable to locate poems array.");
 const poems = JSON.parse(source.slice(start + marker.length, end + 2));
+const editionSource = fs.readFileSync(editionPath, "utf8");
+const edition = Object.fromEntries(
+  [...editionSource.matchAll(/(editorName|editorUrl|dateModified|version): "([^"]+)"/g)].map(
+    (match) => [match[1], match[2]],
+  ),
+);
 const template = fs.readFileSync(indexPath, "utf8");
 
 const escapeHtml = (value) =>
@@ -32,6 +39,8 @@ for (const poem of poems) {
   const canonicalUrl = `${siteUrl}poems/${poem.id}/`;
   const title = `〈${poem.title}〉全文、朗讀與主題導讀｜詩經${poem.chapter}・${poem.section}第${poem.id}篇｜詩經線上讀本`;
   const description = `《詩經》${poem.chapter}・${poem.section}第${poem.id}篇〈${poem.title}〉全文，共${poem.stanzas.length}章，提供分類導覽、中文朗讀、收藏與本機札記。`;
+  const socialImage = `${siteUrl}assets/og/poem-${poem.id}.jpg`;
+  const socialImageAlt = `《詩經》${poem.chapter}・${poem.section}〈${poem.title}〉社群分享圖`;
   const jsonLd = JSON.stringify({
     "@context": "https://schema.org",
     "@graph": [
@@ -47,6 +56,19 @@ for (const poem of poems) {
         genre: "中國古典詩歌",
         inLanguage: "zh-Hant",
         isAccessibleForFree: true,
+        dateModified: edition.dateModified,
+        editor: {
+          "@type": "Person",
+          name: edition.editorName,
+          url: edition.editorUrl,
+        },
+        image: {
+          "@type": "ImageObject",
+          url: socialImage,
+          width: 1200,
+          height: 630,
+          caption: socialImageAlt,
+        },
         isPartOf: {
           "@type": "Book",
           "@id": `${siteUrl}#book`,
@@ -91,6 +113,13 @@ for (const poem of poems) {
   html = replaceMeta(html, 'property="og:description"', description);
   html = replaceMeta(html, 'property="og:type"', "article");
   html = replaceMeta(html, 'property="og:url"', canonicalUrl);
+  html = replaceMeta(html, 'property="og:image"', socialImage);
+  html = replaceMeta(html, 'property="og:image:secure_url"', socialImage);
+  html = replaceMeta(html, 'property="og:image:alt"', socialImageAlt);
+  html = replaceMeta(html, 'name="twitter:title"', title);
+  html = replaceMeta(html, 'name="twitter:description"', description);
+  html = replaceMeta(html, 'name="twitter:image"', socialImage);
+  html = replaceMeta(html, 'name="twitter:image:alt"', socialImageAlt);
 
   const outputDir = path.join(distDir, "poems", String(poem.id));
   fs.mkdirSync(outputDir, { recursive: true });

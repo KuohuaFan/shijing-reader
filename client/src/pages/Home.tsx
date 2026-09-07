@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useTheme } from "@/contexts/ThemeContext";
 import { chapterOrder, poems, type Poem } from "@/data/shijing";
 import { prefaces } from "@/data/prefaces";
+import { edition } from "@/data/edition";
 import {
   poemMatchesTopic,
   topicByKey,
@@ -154,6 +155,12 @@ export default function Home() {
       ? SEO_TITLE
       : `〈${current.title}〉全文｜詩經${current.chapter}・${current.section}第${current.id}篇｜詩經線上讀本`;
     const description = cover ? HOME_DESCRIPTION : poemDescription;
+    const socialImage = cover
+      ? `${SITE_URL}assets/og-home.jpg`
+      : `${SITE_URL}assets/og/poem-${current.id}.jpg`;
+    const socialImageAlt = cover
+      ? "詩經線上讀本水墨山水社群分享圖"
+      : `《詩經》${current.chapter}・${current.section}〈${current.title}〉社群分享圖`;
 
     document.title = pageTitle;
     updateMeta('link[rel="canonical"]', "href", canonicalUrl);
@@ -162,6 +169,19 @@ export default function Home() {
     updateMeta('meta[property="og:description"]', "content", description);
     updateMeta('meta[property="og:type"]', "content", cover ? "website" : "article");
     updateMeta('meta[property="og:url"]', "content", canonicalUrl);
+    updateMeta('meta[property="og:image"]', "content", socialImage);
+    updateMeta('meta[property="og:image:secure_url"]', "content", socialImage);
+    updateMeta('meta[property="og:image:alt"]', "content", socialImageAlt);
+    updateMeta('meta[name="twitter:title"]', "content", pageTitle);
+    updateMeta('meta[name="twitter:description"]', "content", description);
+    updateMeta('meta[name="twitter:image"]', "content", socialImage);
+    updateMeta('meta[name="twitter:image:alt"]', "content", socialImageAlt);
+
+    const editor = {
+      "@type": "Person",
+      name: edition.editorName,
+      url: edition.editorUrl,
+    };
 
     const graph = cover
       ? [
@@ -180,6 +200,8 @@ export default function Home() {
             name: "詩經三百零五篇線上讀本",
             isPartOf: { "@id": `${SITE_URL}#website` },
             mainEntity: { "@id": `${SITE_URL}#book` },
+            dateModified: edition.dateModified,
+            editor,
             inLanguage: "zh-Hant",
           },
           {
@@ -191,6 +213,9 @@ export default function Home() {
             genre: ["中國古典文學", "先秦詩歌", "詩歌總集"],
             inLanguage: "zh-Hant",
             isAccessibleForFree: true,
+            dateModified: edition.dateModified,
+            editor,
+            image: socialImage,
           },
         ]
       : [
@@ -207,6 +232,15 @@ export default function Home() {
             keywords: topicsForPoem(current).map((topic) => topic.label),
             inLanguage: "zh-Hant",
             isAccessibleForFree: true,
+            dateModified: edition.dateModified,
+            editor,
+            image: {
+              "@type": "ImageObject",
+              url: socialImage,
+              width: 1200,
+              height: 630,
+              caption: socialImageAlt,
+            },
             isPartOf: {
               "@type": "Book",
               "@id": `${SITE_URL}#book`,
@@ -417,7 +451,7 @@ export default function Home() {
         <div className="coverQuote" aria-hidden="true">
           <span>關關雎鳩</span><span>在河之洲</span>
         </div>
-        <div className="coverEdition">甲辰編次 · 數位校讀版 v1.0</div>
+        <div className="coverEdition">數位校訂：{edition.editorName} · 更新 {edition.dateModified} · v{edition.version}</div>
         {about && <AboutPanel onClose={() => setAbout(false)} />}
       </main>
     );
@@ -748,6 +782,8 @@ function AboutPanel({ onClose }: { onClose: () => void }) {
         <div className="aboutRule" />
         <h3>語料</h3>
         <p>收錄今存三百零五篇。原始結構化資料來自 chinese-poetry 專案（MIT License），經 OpenCC 轉為繁體；篇目與風、雅、頌分類以中文維基文庫交叉核對。古籍用字與異文仍應以權威校勘本為準。</p>
+        <h3>數位校訂</h3>
+        <p>校訂者：{edition.editorName}；本版最後更新：{edition.dateModified}；版本：v{edition.version}。校訂範圍包括篇目、傳統分部、繁體用字、主題索引、來源與數位呈現，並非取代權威古籍校勘本。</p>
         <h3>內容分層</h3>
         <p>「原文」與「毛詩序」分開保存；只有已核對的古序才顯示正文，未完成者明確標示待校訂。「我的札記」僅存於使用者瀏覽器。</p>
         <h3>編輯方式</h3>

@@ -10,7 +10,7 @@ GitHub Pages：<https://kuohuafan.github.io/shijing-reader/>
 
 ## 主要功能
 
-本站提供封面式進入體驗、六部分層目錄、305 篇全文搜尋、風／雅／頌體例篩選、愛情／農事／征役／祭祀／宴飲／思歸內容主題交叉篩選、原文與古序分層、篇章固定連結、收藏、本機札記、瀏覽器中文朗讀、明暗模式、字級調整、橫排／直排切換、響應式版面及列印樣式。SEO 層包含首頁與 305 篇獨立 canonical 網址、`sitemap.xml`、`robots.txt`，以及 WebSite、CollectionPage、Book、CreativeWork、BreadcrumbList 等 JSON-LD 結構化資料。
+本站提供封面式進入體驗、六部分層目錄、305 篇全文搜尋、風／雅／頌體例篩選、愛情／農事／征役／祭祀／宴飲／思歸內容主題交叉篩選、原文與古序分層、篇章固定連結、收藏、本機札記、瀏覽器中文朗讀、明暗模式、字級調整、橫排／直排切換、響應式版面及列印樣式。SEO 層包含首頁與 305 篇獨立 canonical 網址、`sitemap.xml`、`robots.txt`、每篇專屬 1200 × 630 社群分享圖，以及包含修改日期與數位校訂者的 WebSite、CollectionPage、Book、CreativeWork、BreadcrumbList JSON-LD。
 
 ## 本機開發
 
@@ -23,6 +23,12 @@ pnpm dev
 
 ```bash
 pnpm generate:seo
+```
+
+原文、篇目或版次更新後，重新產生 305 張社群分享圖：
+
+```bash
+pnpm generate:social
 ```
 
 正式檢查與建置：
@@ -47,7 +53,7 @@ GitHub Actions 完成後，正式網站會自動更新。部署狀態可在儲�
 
 ## 內容編輯
 
-完整說明見 [`CONTENT_GUIDE.md`](./CONTENT_GUIDE.md)。原文資料集中於 `client/src/data/shijing.ts`；古序資料集中於 `client/src/data/prefaces.ts`；體例與內容主題索引集中於 `client/src/data/topics.ts`。資料與介面分離，校訂內容不需更改元件。
+完整說明見 [`CONTENT_GUIDE.md`](./CONTENT_GUIDE.md)。原文資料集中於 `client/src/data/shijing.ts`；古序資料集中於 `client/src/data/prefaces.ts`；體例與內容主題索引集中於 `client/src/data/topics.ts`；校訂者、版本與最後修改日期集中於 `client/src/data/edition.ts`。資料與介面分離，校訂內容不需更改元件。
 
 ## 資料與授權
 

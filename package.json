@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --host",
+    "generate:social": "python3 scripts/generate-social-images.py",
     "generate:seo": "node scripts/generate-seo.mjs",
     "prebuild": "pnpm generate:seo",
     "build": "vite build && node scripts/generate-poem-pages.mjs && node scripts/verify-build.mjs && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",

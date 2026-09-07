@@ -4,10 +4,14 @@ import { fileURLToPath } from "node:url";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourcePath = path.join(projectRoot, "client/src/data/shijing.ts");
+const editionPath = path.join(projectRoot, "client/src/data/edition.ts");
 const publicDir = path.join(projectRoot, "client/public");
 const siteUrl = "https://kuohuafan.github.io/shijing-reader/";
 
 const source = fs.readFileSync(sourcePath, "utf8");
+const editionSource = fs.readFileSync(editionPath, "utf8");
+const dateModified = editionSource.match(/dateModified: "([^"]+)"/)?.[1];
+if (!dateModified) throw new Error("Cannot generate sitemap: missing dateModified.");
 const poemIds = [...source.matchAll(/"id": (\d+)/g)].map((match) => Number(match[1]));
 
 if (
@@ -31,6 +35,7 @@ ${urls
   .map(
     ({ loc, priority }) => `  <url>
     <loc>${loc}</loc>
+    <lastmod>${dateModified}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>${priority}</priority>
   </url>`,
