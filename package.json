@@ -5,8 +5,11 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-    "build:web": "vite build",
+    "generate:seo": "node scripts/generate-seo.mjs",
+    "prebuild": "pnpm generate:seo",
+    "build": "vite build && node scripts/generate-poem-pages.mjs && node scripts/verify-build.mjs && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "prebuild:web": "pnpm generate:seo",
+    "build:web": "vite build && node scripts/generate-poem-pages.mjs && node scripts/verify-build.mjs",
     "start": "NODE_ENV=production node dist/index.js",
     "preview": "vite preview --host",
     "check": "tsc --noEmit",

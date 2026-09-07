@@ -10,13 +10,19 @@ GitHub Pages：<https://kuohuafan.github.io/shijing-reader/>
 
 ## 主要功能
 
-本站提供封面式進入體驗、六部分層目錄、305 篇全文搜尋、風／雅／頌體例篩選、愛情／農事／征役／祭祀／宴飲／思歸內容主題交叉篩選、原文與古序分層、篇章固定連結、收藏、本機札記、瀏覽器中文朗讀、明暗模式、字級調整、橫排／直排切換、響應式版面及列印樣式。
+本站提供封面式進入體驗、六部分層目錄、305 篇全文搜尋、風／雅／頌體例篩選、愛情／農事／征役／祭祀／宴飲／思歸內容主題交叉篩選、原文與古序分層、篇章固定連結、收藏、本機札記、瀏覽器中文朗讀、明暗模式、字級調整、橫排／直排切換、響應式版面及列印樣式。SEO 層包含首頁與 305 篇獨立 canonical 網址、`sitemap.xml`、`robots.txt`，以及 WebSite、CollectionPage、Book、CreativeWork、BreadcrumbList 等 JSON-LD 結構化資料。
 
 ## 本機開發
 
 ```bash
 pnpm install
 pnpm dev
+```
+
+重新產生搜尋引擎索引檔：
+
+```bash
+pnpm generate:seo
 ```
 
 正式檢查與建置：

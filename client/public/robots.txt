@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kuohuafan.github.io/shijing-reader/sitemap.xml

@@ -43,6 +43,8 @@ const NOTE_KEY = "shijing-reader:notes:v1";
 const STAR_KEY = "shijing-reader:stars:v1";
 const SIZE_KEY = "shijing-reader:font-size:v1";
 const SEO_TITLE = "詩經線上讀本｜完整三百零五篇全文搜尋、風雅頌分類、愛情農事主題導讀、原文朗讀收藏與先秦古典詩歌數位閱讀平台";
+const SITE_URL = "https://kuohuafan.github.io/shijing-reader/";
+const HOME_DESCRIPTION = "《詩經》三百零五篇互動讀本：依國風、小雅、大雅、周頌、魯頌、商頌編排，支援全文搜尋、收藏、朗讀與本機札記。";
 
 type Tab = "text" | "preface" | "notes";
 type Direction = "horizontal" | "vertical";
@@ -57,9 +59,15 @@ function readJson<T>(key: string, fallback: T): T {
 }
 
 function initialPoemId() {
+  const pathId = Number(window.location.pathname.match(/\/poems\/(\d+)\/?$/)?.[1]);
+  const queryId = Number(new URLSearchParams(window.location.search).get("poem"));
   const match = window.location.hash.match(/^#poem-(\d+)$/);
-  const id = match ? Number(match[1]) : 1;
+  const id = pathId || queryId || (match ? Number(match[1]) : 1);
   return id >= 1 && id <= poems.length ? id : 1;
+}
+
+function updateMeta(selector: string, attribute: string, value: string) {
+  document.querySelector(selector)?.setAttribute(attribute, value);
 }
 
 function poemUrl(poem: Poem) {
@@ -85,9 +93,11 @@ function groupPoems(items: Poem[]) {
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
   const [cover, setCover] = useState(
-    () =>
-      new URLSearchParams(window.location.search).get("read") !== "1" &&
-      !window.location.hash,
+    () => {
+      const params = new URLSearchParams(window.location.search);
+      const hasPoemPath = /\/poems\/\d+\/?$/.test(window.location.pathname);
+      return params.get("read") !== "1" && !params.has("poem") && !hasPoemPath && !window.location.hash;
+    },
   );
   const [poemId, setPoemId] = useState(initialPoemId);
   const [tab, setTab] = useState<Tab>("text");
@@ -138,8 +148,98 @@ export default function Home() {
   );
 
   useEffect(() => {
-    document.title = SEO_TITLE;
-  }, []);
+    const canonicalUrl = cover ? SITE_URL : `${SITE_URL}poems/${current.id}/`;
+    const poemDescription = `《詩經》${current.chapter}・${current.section}第${current.id}篇〈${current.title}〉全文，共${current.stanzas.length}章，附主題分類、朗讀與札記功能。`;
+    const pageTitle = cover
+      ? SEO_TITLE
+      : `〈${current.title}〉全文｜詩經${current.chapter}・${current.section}第${current.id}篇｜詩經線上讀本`;
+    const description = cover ? HOME_DESCRIPTION : poemDescription;
+
+    document.title = pageTitle;
+    updateMeta('link[rel="canonical"]', "href", canonicalUrl);
+    updateMeta('meta[name="description"]', "content", description);
+    updateMeta('meta[property="og:title"]', "content", pageTitle);
+    updateMeta('meta[property="og:description"]', "content", description);
+    updateMeta('meta[property="og:type"]', "content", cover ? "website" : "article");
+    updateMeta('meta[property="og:url"]', "content", canonicalUrl);
+
+    const graph = cover
+      ? [
+          {
+            "@type": "WebSite",
+            "@id": `${SITE_URL}#website`,
+            url: SITE_URL,
+            name: "詩經線上讀本",
+            description: HOME_DESCRIPTION,
+            inLanguage: "zh-Hant",
+          },
+          {
+            "@type": "CollectionPage",
+            "@id": `${SITE_URL}#collection`,
+            url: SITE_URL,
+            name: "詩經三百零五篇線上讀本",
+            isPartOf: { "@id": `${SITE_URL}#website` },
+            mainEntity: { "@id": `${SITE_URL}#book` },
+            inLanguage: "zh-Hant",
+          },
+          {
+            "@type": "Book",
+            "@id": `${SITE_URL}#book`,
+            name: "詩經",
+            alternateName: "詩三百",
+            url: SITE_URL,
+            genre: ["中國古典文學", "先秦詩歌", "詩歌總集"],
+            inLanguage: "zh-Hant",
+            isAccessibleForFree: true,
+          },
+        ]
+      : [
+          {
+            "@type": "CreativeWork",
+            "@id": `${canonicalUrl}#poem`,
+            url: canonicalUrl,
+            name: current.title,
+            headline: `詩經${current.chapter}・${current.section}〈${current.title}〉`,
+            description: poemDescription,
+            text: current.stanzas.join("\n\n"),
+            position: current.id,
+            genre: "中國古典詩歌",
+            keywords: topicsForPoem(current).map((topic) => topic.label),
+            inLanguage: "zh-Hant",
+            isAccessibleForFree: true,
+            isPartOf: {
+              "@type": "Book",
+              "@id": `${SITE_URL}#book`,
+              name: "詩經",
+              url: SITE_URL,
+            },
+          },
+          {
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "詩經線上讀本",
+                item: SITE_URL,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: `${current.chapter}・${current.section}・${current.title}`,
+                item: canonicalUrl,
+              },
+            ],
+          },
+        ];
+    const structuredData = document.querySelector<HTMLScriptElement>("#structured-data");
+    if (structuredData) {
+      structuredData.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": graph,
+      });
+    }
+  }, [cover, current]);
 
   useEffect(() => {
     localStorage.setItem(STAR_KEY, JSON.stringify(favorites));
@@ -186,13 +286,18 @@ export default function Home() {
     setTab("text");
     setDrawer(false);
     setCover(false);
-    window.history.replaceState(null, "", `#poem-${id}`);
+    window.history.replaceState(null, "", `${import.meta.env.BASE_URL}poems/${id}/`);
     requestAnimationFrame(() => poemTop.current?.scrollIntoView({ behavior: "smooth" }));
   }
 
   function startReading() {
     setCover(false);
-    window.history.replaceState(null, "", `?read=1#poem-${poemId}`);
+    window.history.replaceState(null, "", `${import.meta.env.BASE_URL}poems/${poemId}/`);
+  }
+
+  function showCover() {
+    setCover(true);
+    window.history.replaceState(null, "", import.meta.env.BASE_URL);
   }
 
   function toggleFavorite() {
@@ -204,7 +309,7 @@ export default function Home() {
   }
 
   function copyLink() {
-    const url = `${window.location.origin}${window.location.pathname}?read=1#poem-${current.id}`;
+    const url = `${window.location.origin}${import.meta.env.BASE_URL}poems/${current.id}/`;
     navigator.clipboard.writeText(url).then(() => toast("篇章連結已複製"));
   }
 
@@ -270,7 +375,7 @@ export default function Home() {
     return (
       <main className="cover" style={{ backgroundImage: `url(${HERO})` }}>
         <header className="coverNav">
-          <button className="brand" onClick={() => setCover(true)} aria-label="詩經首頁">
+          <button className="brand" onClick={showCover} aria-label="詩經首頁">
             <span className="brandSeal">詩</span>
             <span>詩經讀本</span>
           </button>
@@ -325,7 +430,7 @@ export default function Home() {
           <button className="mobileMenu iconButton" onClick={() => setDrawer(true)} aria-label="開啟目錄">
             <Menu />
           </button>
-          <button className="brand compact" onClick={() => setCover(true)}>
+          <button className="brand compact" onClick={showCover}>
             <span className="brandSeal">詩</span><span>詩經讀本</span>
           </button>
           <span className="headerDivider" />

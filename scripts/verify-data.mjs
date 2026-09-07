@@ -46,7 +46,7 @@ const checks = {
     (key) => new Set(topicEntries[key]).size === topicEntries[key]?.length,
   ),
   seoTitleLength: charLength(seoTitle) >= 30 && charLength(seoTitle) <= 60,
-  runtimeTitleMatches: runtimeTitle === seoTitle && homeSource.includes("document.title = SEO_TITLE"),
+  runtimeTitleMatches: runtimeTitle === seoTitle && homeSource.includes("document.title = pageTitle"),
   h2Length: charLength(h2Text) > 0 && charLength(h2Text) <= 80,
   keywordCount: keywords.length >= 3 && keywords.length <= 8,
   keywordsUnique: new Set(keywords).size === keywords.length,
