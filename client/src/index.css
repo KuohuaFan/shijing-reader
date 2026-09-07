@@ -131,7 +131,8 @@ button { border: 0; background: none; }
 .eyebrow { color: #6e6658; font-family: "Noto Sans TC", sans-serif; font-size: 12px; letter-spacing: .24em; display: flex; align-items: center; gap: 12px; }
 .eyebrow span { width: 31px; height: 1px; background: #9b352d; }
 .cover h1 { font-family: "Noto Serif TC", serif; font-size: clamp(80px,10vw,142px); line-height: .92; letter-spacing: .16em; margin: 30px 0 26px; font-weight: 700; text-shadow: 0 2px rgba(255,255,255,.5); }
-.coverSubtitle { color: #9b352d; font-size: clamp(18px,2vw,25px); letter-spacing: .11em; margin: 0 0 24px; }
+.coverSubtitle { max-width: 650px; color: #9b352d; font-size: clamp(17px,1.8vw,23px); font-weight: 500; line-height: 1.65; letter-spacing: .08em; margin: 0 0 9px; }
+.coverAphorism { color: #5f584d; font-size: 14px; letter-spacing: .13em; margin: 0 0 22px; }
 .coverIntro { max-width: 520px; color: #57574f; font-size: 15px; line-height: 2; letter-spacing: .05em; }
 .coverCtas { display: flex; align-items: center; gap: 14px; margin-top: 36px; }
 .primaryCta, .secondaryCta { height: 50px; display: inline-flex; align-items: center; gap: 11px; padding: 0 22px; transition: all .18s cubic-bezier(.23,1,.32,1); }
@@ -323,6 +324,8 @@ button { border: 0; background: none; }
   .coverActions .textButton { display: none; }
   .coverContent { margin: 14vh 22px 0; width: auto; }
   .cover h1 { font-size: 76px; margin-top: 25px; }
+  .coverSubtitle { font-size: 17px; line-height: 1.7; }
+  .coverAphorism { font-size: 12px; line-height: 1.7; }
   .coverIntro { font-size: 13px; }
   .coverCtas { flex-direction: column; align-items: stretch; }
   .primaryCta, .secondaryCta { justify-content: center; }

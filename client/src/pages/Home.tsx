@@ -42,6 +42,7 @@ const REEDS = `${import.meta.env.BASE_URL}assets/shijing-reeds.png`;
 const NOTE_KEY = "shijing-reader:notes:v1";
 const STAR_KEY = "shijing-reader:stars:v1";
 const SIZE_KEY = "shijing-reader:font-size:v1";
+const SEO_TITLE = "詩經線上讀本｜完整三百零五篇全文搜尋、風雅頌分類、愛情農事主題導讀、原文朗讀收藏與先秦古典詩歌數位閱讀平台";
 
 type Tab = "text" | "preface" | "notes";
 type Direction = "horizontal" | "vertical";
@@ -135,6 +136,10 @@ export default function Home() {
       ) as Record<TopicKey, number>,
     [],
   );
+
+  useEffect(() => {
+    document.title = SEO_TITLE;
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STAR_KEY, JSON.stringify(favorites));
@@ -282,7 +287,8 @@ export default function Home() {
         <section className="coverContent">
           <div className="eyebrow"><span />先秦詩歌總集 · 風雅頌</div>
           <h1>詩經</h1>
-          <p className="coverSubtitle">詩三百，一言以蔽之，思無邪。</p>
+          <h2 className="coverSubtitle">探索詩經三百篇：依風雅頌與愛情、農事等主題閱讀先秦詩歌</h2>
+          <p className="coverAphorism">詩三百，一言以蔽之，思無邪。</p>
           <p className="coverIntro">
             三百零五篇，分國風、二雅、三頌。從草木鳥獸到婚戀征役，
             以古老的聲音，照見人情與禮樂的源流。
