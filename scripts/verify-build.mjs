@@ -1,16 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getEditionMetadata } from "./edition-meta.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = path.join(projectRoot, "dist/public");
 const siteUrl = "https://kuohuafan.github.io/shijing-reader/";
-const editionSource = fs.readFileSync(
-  path.join(projectRoot, "client/src/data/edition.ts"),
-  "utf8",
-);
-const editorName = editionSource.match(/editorName: "([^"]+)"/)?.[1];
-const dateModified = editionSource.match(/dateModified: "([^"]+)"/)?.[1];
+const { editorName, dateModified, commitSha } = getEditionMetadata();
 
 const read = (relativePath) =>
   fs.readFileSync(path.join(distDir, relativePath), "utf8");
@@ -49,7 +45,7 @@ for (let id = 1; id <= 305; id += 1) {
     const types = schema["@graph"].map((item) => item["@type"]);
     const pageTitle = html.match(/<title>([^<]+)<\/title>/)?.[1] ?? "";
     const creativeWork = schema["@graph"].find((item) => item["@type"] === "CreativeWork");
-    const imageUrl = `${siteUrl}assets/og/poem-${id}.jpg`;
+    const imageUrl = `${siteUrl}assets/og/poem-${id}.jpg?v=${commitSha}`;
     const imagePath = path.join(distDir, "assets/og", `poem-${id}.jpg`);
     poemCanonicals.push(canonical);
     poemTitlesValid &&= Array.from(pageTitle).length >= 30 && Array.from(pageTitle).length <= 60;
@@ -108,7 +104,7 @@ const checks = {
   socialMetaValid,
   editionMetadataValid,
   homepageSocialImage:
-    homepage.includes(`${siteUrl}assets/og-home.jpg`) &&
+    homepage.includes(`${siteUrl}assets/og-home.jpg?v=${commitSha}`) &&
     fs.existsSync(path.join(distDir, "assets/og-home.jpg")),
 };
 
@@ -121,6 +117,7 @@ console.log(
       socialImagesChecked: 305,
       editorName,
       dateModified,
+      commitSha,
       checks,
     },
     null,

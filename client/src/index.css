@@ -134,7 +134,14 @@ button { border: 0; background: none; }
 .coverSubtitle { max-width: 650px; color: #9b352d; font-size: clamp(17px,1.8vw,23px); font-weight: 500; line-height: 1.65; letter-spacing: .08em; margin: 0 0 9px; }
 .coverAphorism { color: #5f584d; font-size: 14px; letter-spacing: .13em; margin: 0 0 22px; }
 .coverIntro { max-width: 520px; color: #57574f; font-size: 15px; line-height: 2; letter-spacing: .05em; }
-.coverCtas { display: flex; align-items: center; gap: 14px; margin-top: 36px; }
+.coverSearch { width: min(560px,88vw); height: 50px; display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 11px; margin-top: 27px; padding: 0 8px 0 16px; border: 1px solid rgba(53,52,45,.23); background: rgba(248,244,233,.67); backdrop-filter: blur(9px); box-shadow: 0 10px 35px rgba(46,42,32,.08); }
+.coverSearch > svg { width: 18px; color: #766e60; }
+.coverSearch input { min-width: 0; border: 0; outline: 0; color: #282923; background: transparent; font-family: "Noto Sans TC", sans-serif; font-size: 13px; cursor: text; }
+.coverSearch input::placeholder { color: #7b766b; }
+.coverSearch button { height: 36px; padding: 0 17px; color: #fffaf0; background: #9b352d; font-family: "Noto Sans TC", sans-serif; font-size: 11px; letter-spacing: .1em; transition: background .16s, transform .16s; }
+.coverSearch button:hover { background: #7d2b25; }
+.coverSearch button:active { transform: scale(.96); }
+.coverCtas { display: flex; align-items: center; gap: 14px; margin-top: 18px; }
 .primaryCta, .secondaryCta { height: 50px; display: inline-flex; align-items: center; gap: 11px; padding: 0 22px; transition: all .18s cubic-bezier(.23,1,.32,1); }
 .primaryCta { background: #29322c; color: #fbf7ec; box-shadow: 0 10px 28px rgba(32,38,34,.2); }
 .primaryCta svg, .secondaryCta svg { width: 17px; }
@@ -150,7 +157,13 @@ button { border: 0; background: none; }
 .coverQuote { position: absolute; right: clamp(40px,5vw,90px); top: 21%; display: flex; gap: 18px; color: rgba(36,37,31,.26); font-size: 23px; letter-spacing: .26em; writing-mode: vertical-rl; }
 .coverEdition { position: absolute; right: 35px; bottom: 30px; color: rgba(50,49,44,.55); font-size: 10px; letter-spacing: .2em; writing-mode: vertical-rl; }
 
-.readerShell { min-height: 100svh; background: var(--paper); color: var(--ink); }
+.readerShell { --topic-accent: var(--gold); --topic-wash: color-mix(in srgb, var(--gold) 10%, transparent); min-height: 100svh; background: var(--paper); color: var(--ink); }
+.topic-love { --topic-accent: #963d4c; --topic-wash: rgba(150,61,76,.09); }
+.topic-farming { --topic-accent: #5d6a39; --topic-wash: rgba(93,106,57,.09); }
+.topic-service { --topic-accent: #48535d; --topic-wash: rgba(72,83,93,.09); }
+.topic-ritual { --topic-accent: #68472f; --topic-wash: rgba(104,71,47,.09); }
+.topic-feast { --topic-accent: #755234; --topic-wash: rgba(117,82,52,.09); }
+.topic-homecoming { --topic-accent: #42585e; --topic-wash: rgba(66,88,94,.09); }
 .readerHeader { position: fixed; inset: 0 0 auto 0; height: 68px; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
 .readerHeaderLeft, .readerActions { display: flex; align-items: center; gap: 6px; }
 .brand.compact { letter-spacing: .11em; padding-right: 10px; }
@@ -208,12 +221,15 @@ button { border: 0; background: none; }
 .catalogue details:not([open]) summary svg { transform: rotate(-90deg); }
 .sectionGroup { padding: 2px 5px 12px; }
 .sectionGroup h3 { color: var(--gold); font-family: "Noto Sans TC", sans-serif; font-size: 10px; letter-spacing: .16em; margin: 10px 9px 5px; font-weight: 500; }
-.sectionGroup button { width: 100%; padding: 8px 11px; display: flex; align-items: center; gap: 12px; color: var(--ink-soft); text-align: left; font-size: 13px; border-radius: 2px; transition: background .15s, color .15s; }
-.sectionGroup button span { min-width: 25px; font-family: "Noto Sans TC", sans-serif; font-size: 8px; opacity: .55; letter-spacing: .05em; }
+.sectionGroup button { width: 100%; padding: 8px 11px; display: flex; align-items: flex-start; gap: 12px; color: var(--ink-soft); text-align: left; font-size: 13px; border-radius: 2px; transition: background .15s, color .15s; }
+.sectionGroup button > span:first-child { min-width: 25px; padding-top: 2px; font-family: "Noto Sans TC", sans-serif; font-size: 8px; opacity: .55; letter-spacing: .05em; }
+.cataloguePoemText { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 3px; }
+.cataloguePoemText b { font-weight: 500; }
+.cataloguePoemText small { overflow: hidden; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 8px; font-weight: 400; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; opacity: .72; }
 .sectionGroup button:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); color: var(--ink); }
 .sectionGroup button.active { background: color-mix(in srgb, var(--cinnabar) 10%, transparent); color: var(--cinnabar); font-weight: 700; }
 .noResults { padding: 38px 10px; color: var(--ink-soft); text-align: center; font-size: 13px; }
-.readingPane { grid-column: 2; position: relative; min-width: 0; }
+.readingPane { grid-column: 2; position: relative; min-width: 0; background: radial-gradient(circle at 86% 11%, var(--topic-wash), transparent 34%); transition: background .24s cubic-bezier(.23,1,.32,1); }
 .poemArticle { max-width: 830px; margin: 0 auto; padding: 72px clamp(30px,6vw,74px) 80px; }
 .breadcrumb { display: flex; gap: 9px; align-items: center; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 10px; letter-spacing: .12em; }
 .breadcrumb i { color: var(--gold); font-style: normal; }
@@ -228,7 +244,22 @@ button { border: 0; background: none; }
 .poemTopicRow > span svg { width: 13px; height: 13px; color: var(--gold); }
 .poemTopicRow button { padding: 4px 9px; color: var(--ink-soft); border: 1px solid var(--border); font-family: "Noto Sans TC", sans-serif; font-size: 9px; letter-spacing: .06em; transition: color .15s, border-color .15s, background .15s, transform .15s; }
 .poemTopicRow button:hover, .poemTopicRow button.active { color: var(--cinnabar); border-color: color-mix(in srgb, var(--cinnabar) 48%, transparent); background: color-mix(in srgb, var(--cinnabar) 7%, transparent); }
+.topicChips button[class*="topic-"] { --chip-accent: var(--topic-accent); }
+.topicChips button.topic-love, .poemTopicRow button.topic-love { --chip-accent: #963d4c; }
+.topicChips button.topic-farming, .poemTopicRow button.topic-farming { --chip-accent: #5d6a39; }
+.topicChips button.topic-service, .poemTopicRow button.topic-service { --chip-accent: #48535d; }
+.topicChips button.topic-ritual, .poemTopicRow button.topic-ritual { --chip-accent: #68472f; }
+.topicChips button.topic-feast, .poemTopicRow button.topic-feast { --chip-accent: #755234; }
+.topicChips button.topic-homecoming, .poemTopicRow button.topic-homecoming { --chip-accent: #42585e; }
+.topicChips button[class*="topic-"].active, .poemTopicRow button[class*="topic-"].active { color: var(--chip-accent); border-color: color-mix(in srgb, var(--chip-accent) 56%, transparent); background: color-mix(in srgb, var(--chip-accent) 9%, transparent); }
 .poemTopicRow button:active { transform: scale(.96); }
+.favoriteButton { width: fit-content; min-height: 36px; display: inline-flex; align-items: center; gap: 8px; margin: 0 0 13px; padding: 7px 11px; color: var(--ink-soft); background: color-mix(in srgb, var(--card) 58%, transparent); border: 1px solid var(--border); font-family: "Noto Sans TC", sans-serif; transition: color .15s, border-color .15s, background .15s, transform .15s; }
+.favoriteButton svg { width: 15px; height: 15px; }
+.favoriteButton span { font-size: 11px; font-weight: 600; letter-spacing: .05em; }
+.favoriteButton small { padding-left: 8px; border-left: 1px solid var(--border); font-size: 9px; opacity: .72; }
+.favoriteButton:hover, .favoriteButton.active { color: var(--cinnabar); border-color: color-mix(in srgb, var(--cinnabar) 46%, transparent); background: color-mix(in srgb, var(--cinnabar) 7%, transparent); }
+.favoriteButton.active svg { fill: color-mix(in srgb, var(--cinnabar) 20%, transparent); }
+.favoriteButton:active { transform: scale(.97); }
 .contentTabs { display: flex; gap: 28px; border-bottom: 1px solid var(--border); }
 .contentTabs button { display: flex; align-items: center; gap: 8px; padding: 11px 2px 13px; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 12px; border-bottom: 2px solid transparent; position: relative; }
 .contentTabs button svg { width: 15px; }
@@ -239,7 +270,7 @@ button { border: 0; background: none; }
 .poemText p { margin: 0 0 1.45em; }
 .poemText.vertical { writing-mode: vertical-rl; height: 500px; max-width: 100%; overflow-x: auto; overflow-y: hidden; line-height: 2.35; margin-left: auto; }
 .poemText.vertical p { margin: 0 0 0 1.6em; }
-.prefacePane, .notesPane { min-height: 320px; }
+.prefacePane, .notesPane, .translationPane { min-height: 320px; }
 .sourceTag { display: inline-block; padding: 5px 9px; color: var(--cinnabar); background: color-mix(in srgb, var(--cinnabar) 9%, transparent); font-family: "Noto Sans TC", sans-serif; font-size: 9px; letter-spacing: .12em; }
 .prefacePane blockquote { font-size: 21px; line-height: 2.05; letter-spacing: .06em; margin: 24px 0 28px; padding-left: 24px; border-left: 2px solid var(--gold); }
 .prefacePane a, .emptyEditorial a { color: var(--cinnabar); display: inline-flex; align-items: center; gap: 7px; font-size: 12px; text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--cinnabar) 36%, transparent); padding-bottom: 3px; }
@@ -248,6 +279,25 @@ button { border: 0; background: none; }
 .emptyEditorial > svg { width: 36px; height: 36px; color: var(--gold); stroke-width: 1.2; }
 .emptyEditorial h2 { font-size: 22px; letter-spacing: .08em; margin: 18px 0 8px; }
 .emptyEditorial p { max-width: 510px; margin: 0 auto 24px; color: var(--ink-soft); line-height: 1.9; font-size: 13px; }
+.translationPane { display: grid; gap: 34px; }
+.translationNotice { display: flex; align-items: flex-start; gap: 13px; padding: 15px 17px; color: var(--ink-soft); background: color-mix(in srgb, var(--gold) 8%, var(--card)); border: 1px solid color-mix(in srgb, var(--gold) 32%, var(--border)); font-family: "Noto Sans TC", sans-serif; }
+.translationNotice > svg { width: 19px; height: 19px; flex: 0 0 auto; margin-top: 2px; color: var(--gold); }
+.translationNotice div { display: flex; flex-direction: column; gap: 5px; }
+.translationNotice b { color: var(--ink); font-size: 11px; letter-spacing: .08em; }
+.translationNotice span { font-size: 10px; line-height: 1.65; }
+.translationSection, .annotationSection { display: grid; gap: 17px; }
+.translationStanza { display: grid; grid-template-columns: 54px minmax(0,1fr); gap: 17px; padding-bottom: 17px; border-bottom: 1px dashed var(--border); }
+.translationStanza:last-child { border-bottom: 0; padding-bottom: 0; }
+.translationStanza small { padding-top: 5px; color: var(--gold); font-family: "Noto Sans TC", sans-serif; font-size: 9px; letter-spacing: .08em; }
+.translationStanza p { margin: 0; color: var(--ink); font-size: 17px; line-height: 2; letter-spacing: .035em; }
+.annotationSection { padding-top: 3px; }
+.annotationSection dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin: 0; }
+.annotationSection dl div { padding: 15px 16px; background: color-mix(in srgb, var(--card) 70%, transparent); border: 1px solid var(--border); }
+.annotationSection dt { margin-bottom: 6px; color: var(--cinnabar); font-size: 14px; font-weight: 700; letter-spacing: .08em; }
+.annotationSection dd { margin: 0; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 11px; line-height: 1.75; }
+.readingNote { padding: 18px 20px; border-left: 2px solid var(--gold); background: color-mix(in srgb, var(--paper-deep) 58%, transparent); }
+.readingNote b { color: var(--gold); font-family: "Noto Sans TC", sans-serif; font-size: 10px; letter-spacing: .12em; }
+.readingNote p { margin: 8px 0 0; color: var(--ink-soft); font-size: 14px; line-height: 1.9; }
 .notesIntro { display: flex; justify-content: space-between; align-items: start; margin-bottom: 18px; }
 .notesIntro h2 { margin: 0 0 6px; font-size: 22px; letter-spacing: .08em; }
 .notesIntro p { margin: 0; color: var(--ink-soft); font-family: "Noto Sans TC", sans-serif; font-size: 11px; }
@@ -327,6 +377,8 @@ button { border: 0; background: none; }
   .coverSubtitle { font-size: 17px; line-height: 1.7; }
   .coverAphorism { font-size: 12px; line-height: 1.7; }
   .coverIntro { font-size: 13px; }
+  .coverSearch { width: 100%; height: 48px; margin-top: 21px; }
+  .coverSearch button { padding: 0 13px; }
   .coverCtas { flex-direction: column; align-items: stretch; }
   .primaryCta, .secondaryCta { justify-content: center; }
   .coverStats { grid-template-columns: 1fr 1fr; gap: 18px; width: 100%; margin-top: 36px; }
@@ -342,8 +394,11 @@ button { border: 0; background: none; }
   .listenButton span { display: none; }
   .listenButton { width: 42px; height: 42px; padding: 0; justify-content: center; border-radius: 50%; }
   .poemTopicRow { margin-bottom: 16px; }
-  .contentTabs { gap: 12px; justify-content: space-between; }
-  .contentTabs button { font-size: 11px; gap: 5px; }
+  .favoriteButton { width: 100%; justify-content: center; }
+  .contentTabs { gap: 9px; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; }
+  .contentTabs::-webkit-scrollbar { display: none; }
+  .contentTabs button { flex: 0 0 auto; font-size: 10px; gap: 4px; }
+  .contentTabs button svg { width: 13px; }
   .contentStage { min-height: 390px; }
   .poemText { line-height: 2.05; }
   .poemText.vertical { height: 450px; }
@@ -353,6 +408,9 @@ button { border: 0; background: none; }
   .pagerMark { display: none; }
   .readerFooter img { left: -100px; width: 310px; }
   .settingsPopover { right: 12px; top: 60px; }
+  .translationStanza { grid-template-columns: 1fr; gap: 6px; }
+  .translationStanza p { font-size: 15px; }
+  .annotationSection dl { grid-template-columns: 1fr; }
 }
 
 @media print {

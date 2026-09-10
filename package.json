@@ -5,6 +5,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --host",
+    "generate:commentaries": "python3 scripts/generate-commentaries.py",
+    "review:commentaries": "python3 scripts/review-commentaries.py",
+    "modernize:translations": "python3 scripts/modernize-translations.py",
     "generate:social": "python3 scripts/generate-social-images.py",
     "generate:seo": "node scripts/generate-seo.mjs",
     "prebuild": "pnpm generate:seo",

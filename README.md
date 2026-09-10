@@ -10,7 +10,7 @@ GitHub Pages：<https://kuohuafan.github.io/shijing-reader/>
 
 ## 主要功能
 
-本站提供封面式進入體驗、六部分層目錄、305 篇全文搜尋、風／雅／頌體例篩選、愛情／農事／征役／祭祀／宴飲／思歸內容主題交叉篩選、原文與古序分層、篇章固定連結、收藏、本機札記、瀏覽器中文朗讀、明暗模式、字級調整、橫排／直排切換、響應式版面及列印樣式。SEO 層包含首頁與 305 篇獨立 canonical 網址、`sitemap.xml`、`robots.txt`、每篇專屬 1200 × 630 社群分享圖，以及包含修改日期與數位校訂者的 WebSite、CollectionPage、Book、CreativeWork、BreadcrumbList JSON-LD。
+本站提供封面式進入體驗、六部分層目錄、305 篇篇名／原文／白話譯文／註詞關鍵字搜尋、風／雅／頌體例篩選、愛情／農事／征役／祭祀／宴飲／思歸內容主題交叉篩選、逐章白話翻譯與詞語註釋、原文與古序分層、篇章固定連結、瀏覽器本機收藏與札記、中文朗讀、明暗模式、字級調整、橫排／直排切換、響應式版面及列印樣式。SEO 層包含首頁與 305 篇獨立 canonical 網址、`sitemap.xml`、`robots.txt`、依內容主題變化的專屬 1200 × 630 社群分享圖，以及包含 Git 提交修改日期與數位校訂者的 WebSite、CollectionPage、Book、CreativeWork、BreadcrumbList JSON-LD。
 
 ## 本機開發
 
@@ -30,6 +30,17 @@ pnpm generate:seo
 ```bash
 pnpm generate:social
 ```
+
+譯註資料先由 `gpt-5-mini` 依本站原文批次生成，再由 `gpt-5` 進行編輯覆核及現代白話改寫；介面仍明確標示為尚待人類學者逐篇核定的閱讀輔助初稿。若要重新生成、續跑、覆核及白話化：
+
+```bash
+pnpm generate:commentaries
+pnpm review:commentaries
+pnpm modernize:translations
+python3 scripts/audit-commentary-quality.py
+```
+
+正式建置會從 Git 最新提交自動取得 `dateModified` 與短版 SHA；GitHub Actions 亦固定以觸發部署的提交資料注入，無須人工更新日期。
 
 正式檢查與建置：
 

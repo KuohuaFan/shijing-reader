@@ -3,12 +3,14 @@ import {
   ArrowLeft,
   ArrowRight,
   Bookmark,
+  BookmarkCheck,
   BookOpen,
   Check,
   ChevronDown,
   CircleHelp,
   Copy,
   Feather,
+  Languages,
   Menu,
   Moon,
   NotebookPen,
@@ -26,7 +28,8 @@ import { toast } from "sonner";
 import { useTheme } from "@/contexts/ThemeContext";
 import { chapterOrder, poems, type Poem } from "@/data/shijing";
 import { prefaces } from "@/data/prefaces";
-import { edition } from "@/data/edition";
+import { commentaryByPoemId, commentaryModel } from "@/data/commentaries";
+import { edition, editionDate } from "@/data/edition";
 import {
   poemMatchesTopic,
   topicByKey,
@@ -45,9 +48,9 @@ const STAR_KEY = "shijing-reader:stars:v1";
 const SIZE_KEY = "shijing-reader:font-size:v1";
 const SEO_TITLE = "詩經線上讀本｜完整三百零五篇全文搜尋、風雅頌分類、愛情農事主題導讀、原文朗讀收藏與先秦古典詩歌數位閱讀平台";
 const SITE_URL = "https://kuohuafan.github.io/shijing-reader/";
-const HOME_DESCRIPTION = "《詩經》三百零五篇互動讀本：依國風、小雅、大雅、周頌、魯頌、商頌編排，支援全文搜尋、收藏、朗讀與本機札記。";
+const HOME_DESCRIPTION = "《詩經》三百零五篇互動讀本：依國風、小雅、大雅與三頌編排，支援關鍵字搜尋、白話譯註、收藏、朗讀與本機札記。";
 
-type Tab = "text" | "preface" | "notes";
+type Tab = "text" | "translation" | "preface" | "notes";
 type Direction = "horizontal" | "vertical";
 
 function readJson<T>(key: string, fallback: T): T {
@@ -60,9 +63,20 @@ function readJson<T>(key: string, fallback: T): T {
 }
 
 function initialPoemId() {
+  const params = new URLSearchParams(window.location.search);
   const pathId = Number(window.location.pathname.match(/\/poems\/(\d+)\/?$/)?.[1]);
-  const queryId = Number(new URLSearchParams(window.location.search).get("poem"));
+  const queryId = Number(params.get("poem"));
   const match = window.location.hash.match(/^#poem-(\d+)$/);
+  const search = params.get("q")?.trim().toLocaleLowerCase("zh-Hant");
+  if (search && !pathId && !queryId && !match) {
+    const firstMatch = poems.find((poem) => {
+      const commentary = commentaryByPoemId[poem.id];
+      return `${poem.title}${poem.chapter}${poem.section}${poem.stanzas.join("")}${commentary.translation.join("")}${commentary.annotations.map((item) => `${item.term}${item.explanation}`).join("")}`
+        .toLocaleLowerCase("zh-Hant")
+        .includes(search);
+    });
+    if (firstMatch) return firstMatch.id;
+  }
   const id = pathId || queryId || (match ? Number(match[1]) : 1);
   return id >= 1 && id <= poems.length ? id : 1;
 }
@@ -91,19 +105,45 @@ function groupPoems(items: Poem[]) {
   }));
 }
 
+function searchExcerpt(poem: Poem, query: string) {
+  const needle = query.trim();
+  if (!needle) return "";
+  const commentary = commentaryByPoemId[poem.id];
+  const sources = [
+    ...poem.stanzas,
+    ...(commentary?.translation ?? []),
+    ...(commentary?.annotations.map(
+      (item) => `${item.term}：${item.explanation}`,
+    ) ?? []),
+  ];
+  const foldedNeedle = needle.toLocaleLowerCase("zh-Hant");
+  const source = sources.find((text) =>
+    text.toLocaleLowerCase("zh-Hant").includes(foldedNeedle),
+  );
+  if (!source) return "";
+  const index = source.toLocaleLowerCase("zh-Hant").indexOf(foldedNeedle);
+  const start = Math.max(0, index - 12);
+  const end = Math.min(source.length, index + needle.length + 18);
+  return `${start > 0 ? "…" : ""}${source.slice(start, end)}${end < source.length ? "…" : ""}`;
+}
+
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
   const [cover, setCover] = useState(
     () => {
       const params = new URLSearchParams(window.location.search);
       const hasPoemPath = /\/poems\/\d+\/?$/.test(window.location.pathname);
-      return params.get("read") !== "1" && !params.has("poem") && !hasPoemPath && !window.location.hash;
+      return params.get("read") !== "1" && !params.has("poem") && !params.has("q") && !hasPoemPath && !window.location.hash;
     },
   );
   const [poemId, setPoemId] = useState(initialPoemId);
   const [tab, setTab] = useState<Tab>("text");
-  const [query, setQuery] = useState("");
-  const [drawer, setDrawer] = useState(false);
+  const [query, setQuery] = useState(
+    () => new URLSearchParams(window.location.search).get("q") ?? "",
+  );
+  const [drawer, setDrawer] = useState(
+    () => new URLSearchParams(window.location.search).has("q"),
+  );
   const [about, setAbout] = useState(false);
   const [settings, setSettings] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
@@ -135,7 +175,8 @@ export default function Home() {
           selectedInGroup.some((key) => poemMatchesTopic(poem, key))
         );
       });
-      const haystack = `${poem.title}${poem.chapter}${poem.section}${poem.stanzas.join("")}`.toLocaleLowerCase("zh-Hant");
+      const commentary = commentaryByPoemId[poem.id];
+      const haystack = `${poem.title}${poem.chapter}${poem.section}${poem.stanzas.join("")}${commentary?.translation.join("") ?? ""}${commentary?.annotations.map((item) => `${item.term}${item.explanation}`).join("") ?? ""}`.toLocaleLowerCase("zh-Hant");
       return matchFavorite && matchTopics && (!needle || haystack.includes(needle));
     });
   }, [query, favoritesOnly, favorites, selectedTopics]);
@@ -150,14 +191,14 @@ export default function Home() {
 
   useEffect(() => {
     const canonicalUrl = cover ? SITE_URL : `${SITE_URL}poems/${current.id}/`;
-    const poemDescription = `《詩經》${current.chapter}・${current.section}第${current.id}篇〈${current.title}〉全文，共${current.stanzas.length}章，附主題分類、朗讀與札記功能。`;
+    const poemDescription = `《詩經》${current.chapter}・${current.section}第${current.id}篇〈${current.title}〉全文，共${current.stanzas.length}章，附主題分類、白話譯註、朗讀與札記功能。`;
     const pageTitle = cover
       ? SEO_TITLE
       : `〈${current.title}〉全文｜詩經${current.chapter}・${current.section}第${current.id}篇｜詩經線上讀本`;
     const description = cover ? HOME_DESCRIPTION : poemDescription;
     const socialImage = cover
-      ? `${SITE_URL}assets/og-home.jpg`
-      : `${SITE_URL}assets/og/poem-${current.id}.jpg`;
+      ? `${SITE_URL}assets/og-home.jpg?v=${edition.commitSha}`
+      : `${SITE_URL}assets/og/poem-${current.id}.jpg?v=${edition.commitSha}`;
     const socialImageAlt = cover
       ? "詩經線上讀本水墨山水社群分享圖"
       : `《詩經》${current.chapter}・${current.section}〈${current.title}〉社群分享圖`;
@@ -165,6 +206,7 @@ export default function Home() {
     document.title = pageTitle;
     updateMeta('link[rel="canonical"]', "href", canonicalUrl);
     updateMeta('meta[name="description"]', "content", description);
+    updateMeta('meta[property="article:modified_time"]', "content", edition.dateModified);
     updateMeta('meta[property="og:title"]', "content", pageTitle);
     updateMeta('meta[property="og:description"]', "content", description);
     updateMeta('meta[property="og:type"]', "content", cover ? "website" : "article");
@@ -191,6 +233,11 @@ export default function Home() {
             url: SITE_URL,
             name: "詩經線上讀本",
             description: HOME_DESCRIPTION,
+            potentialAction: {
+              "@type": "SearchAction",
+              target: `${SITE_URL}?q={search_term_string}`,
+              "query-input": "required name=search_term_string",
+            },
             inLanguage: "zh-Hant",
           },
           {
@@ -329,6 +376,25 @@ export default function Home() {
     window.history.replaceState(null, "", `${import.meta.env.BASE_URL}poems/${poemId}/`);
   }
 
+  function startSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!query.trim()) {
+      toast("請先輸入篇名、詩句或關鍵字");
+      return;
+    }
+    if (filtered[0]) {
+      setPoemId(filtered[0].id);
+      setTab("text");
+    }
+    setCover(false);
+    setDrawer(true);
+    window.history.replaceState(
+      null,
+      "",
+      `${import.meta.env.BASE_URL}?q=${encodeURIComponent(query.trim())}`,
+    );
+  }
+
   function showCover() {
     setCover(true);
     window.history.replaceState(null, "", import.meta.env.BASE_URL);
@@ -403,7 +469,9 @@ export default function Home() {
   const currentIndex = current.id - 1;
   const isFavorite = favorites.includes(current.id);
   const preface = prefaces[current.id];
+  const commentary = commentaryByPoemId[current.id];
   const currentTopics = topicsForPoem(current);
+  const currentContentTopic = currentTopics.find((topic) => topic.group === "content");
 
   if (cover) {
     return (
@@ -432,6 +500,16 @@ export default function Home() {
             三百零五篇，分國風、二雅、三頌。從草木鳥獸到婚戀征役，
             以古老的聲音，照見人情與禮樂的源流。
           </p>
+          <form className="coverSearch" onSubmit={startSearch}>
+            <Search />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="搜尋篇名、詩句、譯文或註詞"
+              aria-label="關鍵字搜尋"
+            />
+            <button type="submit">搜尋</button>
+          </form>
           <div className="coverCtas">
             <button className="primaryCta" onClick={startReading}>
               <BookOpen /> 開始閱讀 <ArrowRight />
@@ -451,14 +529,14 @@ export default function Home() {
         <div className="coverQuote" aria-hidden="true">
           <span>關關雎鳩</span><span>在河之洲</span>
         </div>
-        <div className="coverEdition">數位校訂：{edition.editorName} · 更新 {edition.dateModified} · v{edition.version}</div>
+        <div className="coverEdition">數位校訂：{edition.editorName} · 更新 {editionDate} · v{edition.version}</div>
         {about && <AboutPanel onClose={() => setAbout(false)} />}
       </main>
     );
   }
 
   return (
-    <div className="readerShell">
+    <div className={`readerShell ${currentContentTopic ? `topic-${currentContentTopic.key}` : ""}`}>
       <header className="readerHeader">
         <div className="readerHeaderLeft">
           <button className="mobileMenu iconButton" onClick={() => setDrawer(true)} aria-label="開啟目錄">
@@ -474,7 +552,7 @@ export default function Home() {
           <button className="iconButton" onClick={randomPoem} aria-label="隨機一篇"><Shuffle /></button>
           <button className="iconButton" onClick={copyLink} aria-label="複製連結"><Copy /></button>
           <button className="iconButton" onClick={toggleFavorite} aria-label="收藏篇章">
-            <Bookmark className={isFavorite ? "filled" : ""} />
+            {isFavorite ? <BookmarkCheck className="filled" /> : <Bookmark />}
           </button>
           <button className="iconButton" onClick={() => setSettings(!settings)} aria-label="閱讀設定"><Settings2 /></button>
           <button className="iconButton" onClick={toggleTheme} aria-label="切換明暗">
@@ -543,7 +621,7 @@ export default function Home() {
               {currentTopics.map((topic) => (
                 <button
                   key={topic.key}
-                  className={selectedTopics.includes(topic.key) ? "active" : ""}
+                  className={`${selectedTopics.includes(topic.key) ? "active" : ""} topic-${topic.key}`}
                   onClick={() => toggleTopic(topic.key)}
                   title={`${topic.description}；點按以篩選目錄`}
                   aria-pressed={selectedTopics.includes(topic.key)}
@@ -553,12 +631,25 @@ export default function Home() {
               ))}
             </div>
 
+            <button
+              className={`favoriteButton ${isFavorite ? "active" : ""}`}
+              onClick={toggleFavorite}
+              aria-pressed={isFavorite}
+            >
+              {isFavorite ? <BookmarkCheck /> : <Bookmark />}
+              <span>{isFavorite ? "已加入收藏" : "加入收藏"}</span>
+              <small>{isFavorite ? "已儲存於此瀏覽器" : "建立你的最愛清單"}</small>
+            </button>
+
             <nav className="contentTabs" aria-label="內容層次">
               <button className={tab === "text" ? "active" : ""} onClick={() => setTab("text")}>
                 <Feather /> 原文
               </button>
               <button className={tab === "preface" ? "active" : ""} onClick={() => setTab("preface")}>
                 <TextCursorInput /> 毛詩序
+              </button>
+              <button className={tab === "translation" ? "active" : ""} onClick={() => setTab("translation")}>
+                <Languages /> 白話譯註
               </button>
               <button className={tab === "notes" ? "active" : ""} onClick={() => setTab("notes")}>
                 <NotebookPen /> 我的札記
@@ -599,6 +690,42 @@ export default function Home() {
                 </div>
               )}
 
+              {tab === "translation" && (
+                <div className="translationPane">
+                  <div className="translationNotice">
+                    <Languages />
+                    <div>
+                      <b>閱讀輔助初稿</b>
+                      <span>由 {commentaryModel} 依本站原文生成，尚待人工逐篇覆核；不取代權威譯注或古籍校勘。</span>
+                    </div>
+                  </div>
+                  <section className="translationSection">
+                    <span className="sourceTag">逐章白話</span>
+                    {commentary.translation.map((translation, index) => (
+                      <div className="translationStanza" key={index}>
+                        <small>第 {index + 1} 章</small>
+                        <p>{translation}</p>
+                      </div>
+                    ))}
+                  </section>
+                  <section className="annotationSection">
+                    <span className="sourceTag">詞語註釋</span>
+                    <dl>
+                      {commentary.annotations.map((item) => (
+                        <div key={item.term}>
+                          <dt>{item.term}</dt>
+                          <dd>{item.explanation}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </section>
+                  <aside className="readingNote">
+                    <b>閱讀提示</b>
+                    <p>{commentary.readingNote}</p>
+                  </aside>
+                </div>
+              )}
+
               {tab === "notes" && (
                 <div className="notesPane">
                   <div className="notesIntro">
@@ -636,7 +763,7 @@ export default function Home() {
 
             <footer className="readerFooter">
               <img src={REEDS} alt="" />
-              <p>原始結構化語料：chinese-poetry（MIT）<br />篇目分類交叉核對：中文維基文庫</p>
+              <p>原始結構化語料：chinese-poetry（MIT）<br />篇目分類交叉核對：中文維基文庫<br />數位校訂：{edition.editorName} · {editionDate} · {edition.commitSha}</p>
             </footer>
           </article>
         </main>
@@ -689,7 +816,7 @@ function Catalogue({
       </div>
       <label className="searchBox">
         <Search />
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜尋篇名或全文" />
+        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜尋篇名、詩句、譯文或註詞" />
         {query && <button onClick={() => setQuery("")} aria-label="清除搜尋"><X /></button>}
       </label>
       <div className="catalogueFilters">
@@ -727,7 +854,7 @@ function Catalogue({
                       return (
                         <button
                           key={topic.key}
-                          className={active ? "active" : ""}
+                          className={`${active ? "active" : ""} topic-${topic.key}`}
                           onClick={() => toggleTopic(topic.key)}
                           aria-pressed={active}
                           title={topic.description}
@@ -757,7 +884,11 @@ function Catalogue({
                   <h3>{section.section}</h3>
                   {section.poems.map((poem) => (
                     <button key={poem.id} className={poem.id === currentId ? "active" : ""} onClick={() => selectPoem(poem.id)}>
-                      <span>{String(poem.id).padStart(3, "0")}</span>{poem.title}
+                      <span>{String(poem.id).padStart(3, "0")}</span>
+                      <span className="cataloguePoemText">
+                        <b>{poem.title}</b>
+                        {query && <small>{searchExcerpt(poem, query)}</small>}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -783,7 +914,7 @@ function AboutPanel({ onClose }: { onClose: () => void }) {
         <h3>語料</h3>
         <p>收錄今存三百零五篇。原始結構化資料來自 chinese-poetry 專案（MIT License），經 OpenCC 轉為繁體；篇目與風、雅、頌分類以中文維基文庫交叉核對。古籍用字與異文仍應以權威校勘本為準。</p>
         <h3>數位校訂</h3>
-        <p>校訂者：{edition.editorName}；本版最後更新：{edition.dateModified}；版本：v{edition.version}。校訂範圍包括篇目、傳統分部、繁體用字、主題索引、來源與數位呈現，並非取代權威古籍校勘本。</p>
+        <p>校訂者：{edition.editorName}；本版最後更新：{editionDate}；版本：v{edition.version}；Git 版本：{edition.commitSha}。更新日期由每次部署所對應的 Git 提交時間自動產生。校訂範圍包括篇目、傳統分部、繁體用字、主題索引、來源與數位呈現，並非取代權威古籍校勘本。</p>
         <h3>內容分層</h3>
         <p>「原文」與「毛詩序」分開保存；只有已核對的古序才顯示正文，未完成者明確標示待校訂。「我的札記」僅存於使用者瀏覽器。</p>
         <h3>編輯方式</h3>

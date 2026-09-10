@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getEditionMetadata } from "./edition-meta.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourcePath = path.join(projectRoot, "client/src/data/shijing.ts");
-const editionPath = path.join(projectRoot, "client/src/data/edition.ts");
 const distDir = path.join(projectRoot, "dist/public");
 const indexPath = path.join(distDir, "index.html");
 const siteUrl = "https://kuohuafan.github.io/shijing-reader/";
@@ -15,12 +15,7 @@ const start = source.indexOf(marker);
 const end = source.indexOf("\n];", start);
 if (start < 0 || end < 0) throw new Error("Unable to locate poems array.");
 const poems = JSON.parse(source.slice(start + marker.length, end + 2));
-const editionSource = fs.readFileSync(editionPath, "utf8");
-const edition = Object.fromEntries(
-  [...editionSource.matchAll(/(editorName|editorUrl|dateModified|version): "([^"]+)"/g)].map(
-    (match) => [match[1], match[2]],
-  ),
-);
+const edition = getEditionMetadata();
 const template = fs.readFileSync(indexPath, "utf8");
 
 const escapeHtml = (value) =>
@@ -38,8 +33,8 @@ const replaceMeta = (html, selector, value) => {
 for (const poem of poems) {
   const canonicalUrl = `${siteUrl}poems/${poem.id}/`;
   const title = `〈${poem.title}〉全文、朗讀與主題導讀｜詩經${poem.chapter}・${poem.section}第${poem.id}篇｜詩經線上讀本`;
-  const description = `《詩經》${poem.chapter}・${poem.section}第${poem.id}篇〈${poem.title}〉全文，共${poem.stanzas.length}章，提供分類導覽、中文朗讀、收藏與本機札記。`;
-  const socialImage = `${siteUrl}assets/og/poem-${poem.id}.jpg`;
+  const description = `《詩經》${poem.chapter}・${poem.section}第${poem.id}篇〈${poem.title}〉全文，共${poem.stanzas.length}章，提供白話譯註、關鍵字搜尋、朗讀、收藏與札記。`;
+  const socialImage = `${siteUrl}assets/og/poem-${poem.id}.jpg?v=${edition.commitSha}`;
   const socialImageAlt = `《詩經》${poem.chapter}・${poem.section}〈${poem.title}〉社群分享圖`;
   const jsonLd = JSON.stringify({
     "@context": "https://schema.org",

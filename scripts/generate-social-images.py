@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "client/src/data/shijing.ts"
+TOPICS = ROOT / "client/src/data/topics.ts"
 EDITION = ROOT / "client/src/data/edition.ts"
 ASSETS = ROOT / "client/public/assets"
 OUTPUT = ASSETS / "og"
@@ -26,6 +27,15 @@ COLORS = {
     "商頌": (105, 53, 50),
 }
 
+TOPIC_STYLES = {
+    "love": {"label": "愛情", "mark": "情", "accent": (150, 61, 76), "wash": (176, 112, 124)},
+    "farming": {"label": "農事", "mark": "耕", "accent": (93, 106, 57), "wash": (138, 145, 83)},
+    "service": {"label": "征役", "mark": "役", "accent": (72, 83, 93), "wash": (104, 120, 129)},
+    "ritual": {"label": "祭祀", "mark": "祭", "accent": (104, 71, 47), "wash": (151, 114, 76)},
+    "feast": {"label": "宴飲", "mark": "宴", "accent": (117, 82, 52), "wash": (164, 126, 78)},
+    "homecoming": {"label": "思歸", "mark": "歸", "accent": (66, 88, 94), "wash": (103, 131, 136)},
+}
+
 
 def parse_poems():
     source = SOURCE.read_text(encoding="utf-8")
@@ -40,11 +50,25 @@ def parse_poems():
 
 def parse_edition():
     source = EDITION.read_text(encoding="utf-8")
-    values = dict(re.findall(r'(editorName|dateModified|version): "([^"]+)"', source))
-    required = {"editorName", "dateModified", "version"}
+    values = dict(re.findall(r'(editorName|version): "([^"]+)"', source))
+    required = {"editorName", "version"}
     if set(values) != required:
         raise RuntimeError("Unable to read edition metadata")
     return values
+
+
+def parse_topic_map():
+    source = TOPICS.read_text(encoding="utf-8")
+    mapping = {}
+    for key in TOPIC_STYLES:
+        match = re.search(
+            rf'key: "{key}"[\s\S]*?poemIds: \[([\s\S]*?)\]', source
+        )
+        if not match:
+            raise RuntimeError(f"Unable to read topic mapping: {key}")
+        for poem_id in map(int, re.findall(r"\d+", match.group(1))):
+            mapping.setdefault(poem_id, []).append(key)
+    return mapping
 
 
 def font(path, size):
@@ -86,7 +110,7 @@ def chinese_lines(text, max_chars=23, max_lines=2):
     return lines
 
 
-def base_canvas(accent):
+def base_canvas(accent, wash=None, mark=None):
     hero = fit_cover(Image.open(HERO).convert("RGB"), (WIDTH, HEIGHT))
     hero = ImageEnhance.Color(hero).enhance(0.55)
     hero = ImageEnhance.Contrast(hero).enhance(0.88)
@@ -97,15 +121,24 @@ def base_canvas(accent):
     veil = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
     draw = ImageDraw.Draw(veil)
     draw.rectangle((0, 0, WIDTH, HEIGHT), fill=(246, 241, 227, 74))
+    if wash:
+        draw.ellipse((770, -190, 1390, 430), fill=(*wash, 32))
+        draw.ellipse((865, 245, 1370, 760), fill=(*accent, 24))
     draw.polygon([(0, 0), (785, 0), (610, HEIGHT), (0, HEIGHT)], fill=(247, 242, 228, 234))
     draw.rectangle((0, 0, 15, HEIGHT), fill=(*accent, 255))
     draw.line((92, 104, 190, 104), fill=(*accent, 210), width=3)
-    return Image.alpha_composite(paper.convert("RGBA"), veil)
+    canvas = Image.alpha_composite(paper.convert("RGBA"), veil)
+    if mark:
+        mark_layer = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+        mark_draw = ImageDraw.Draw(mark_layer)
+        mark_draw.text((906, 194), mark, font=font(SERIF_BOLD, 250), fill=(*accent, 35))
+        canvas = Image.alpha_composite(canvas, mark_layer)
+    return canvas
 
 
 def draw_footer(draw, edition):
     draw.text((92, 555), "詩經 · 線上讀本", font=font(SANS_MEDIUM, 21), fill=(49, 50, 44, 235))
-    footer = f"數位校訂：{edition['editorName']}  ·  更新：{edition['dateModified']}"
+    footer = f"數位校訂：{edition['editorName']}  ·  版本：v{edition['version']}"
     draw.text((92, 590), footer, font=font(SANS_REGULAR, 15), fill=(81, 80, 71, 220))
 
 
@@ -120,12 +153,22 @@ def create_home(edition):
     canvas.convert("RGB").save(ASSETS / "og-home.jpg", "JPEG", quality=84, optimize=True, progressive=True)
 
 
-def create_poem(poem, edition):
-    accent = COLORS.get(poem["chapter"], (153, 51, 43))
-    canvas = base_canvas(accent)
+def create_poem(poem, edition, topic_map):
+    topic_keys = topic_map.get(poem["id"], [])
+    primary_topic = TOPIC_STYLES.get(topic_keys[0]) if topic_keys else None
+    accent = primary_topic["accent"] if primary_topic else COLORS.get(poem["chapter"], (153, 51, 43))
+    canvas = base_canvas(
+        accent,
+        primary_topic["wash"] if primary_topic else None,
+        primary_topic["mark"] if primary_topic else None,
+    )
     draw = ImageDraw.Draw(canvas)
     number = f"{poem['id']:03d}"
-    draw.text((92, 66), f"詩經 · {poem['chapter']} · {poem['section']}", font=font(SANS_MEDIUM, 21), fill=(76, 76, 66, 235))
+    topic_label = "・".join(TOPIC_STYLES[key]["label"] for key in topic_keys[:2])
+    eyebrow = f"詩經 · {poem['chapter']} · {poem['section']}"
+    if topic_label:
+        eyebrow += f" · {topic_label}"
+    draw.text((92, 66), eyebrow, font=font(SANS_MEDIUM, 21), fill=(76, 76, 66, 235))
     draw.text((850, 55), number, font=font(SERIF_BOLD, 116), fill=(*accent, 55))
     draw.text((88, 145), poem["title"], font=font(SERIF_BOLD, 94), fill=(34, 36, 30, 255))
 
@@ -146,10 +189,11 @@ def create_poem(poem, edition):
 def main():
     poems = parse_poems()
     edition = parse_edition()
+    topic_map = parse_topic_map()
     OUTPUT.mkdir(parents=True, exist_ok=True)
     create_home(edition)
     for poem in poems:
-        create_poem(poem, edition)
+        create_poem(poem, edition, topic_map)
     generated = list(OUTPUT.glob("poem-*.jpg"))
     if len(generated) != 305:
         raise RuntimeError(f"Expected 305 social images, generated {len(generated)}")
